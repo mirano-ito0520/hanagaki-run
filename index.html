@@ -114,10 +114,20 @@ canvas{display:block;position:absolute;top:50%;left:50%;transform:translate(-50%
 <img id="xDI" src=""><div class="dn" id="xDN"></div><div class="dd" id="xDD"></div>
 <button class="b" id="xDC" style="margin-top:12px">閉じる</button>
 </div>
-<div id="dr" class="ov h">
-<div style="font-size:20px;color:#ffd93d;font-weight:900;margin:24px 0 16px">🏆 ランキング</div>
-<div style="color:#a88ccc;text-align:center;padding:30px 0">準備中です 🔧</div>
+<div id="dr" class="ov h" style="background:linear-gradient(180deg,#1a1a2e,#16213e);overflow-y:auto">
+<div style="font-size:20px;color:#ffd93d;font-weight:900;margin:24px 0 8px">🏆 ランキング</div>
+<div style="display:flex;gap:4px;margin-bottom:12px">
+<button class="b" id="xRTh" style="font-size:13px;padding:8px 18px" onclick="showRank('hi')">ハイスコア</button>
+<button class="b b3" id="xRTt" style="font-size:13px;padding:8px 18px" onclick="showRank('tot')">累計スコア</button>
+</div>
+<div id="xRL" style="max-width:380px;width:100%;padding:0 16px"></div>
 <button class="b b2" id="xRB" style="margin-top:16px;margin-bottom:24px">戻る</button>
+</div>
+<div id="ni" class="ov h" style="background:rgba(0,0,0,.85);backdrop-filter:blur(4px)">
+<div style="color:#fff;font-size:18px;margin-bottom:12px;font-weight:bold">🎉 ニックネームを入力してね</div>
+<div style="color:#a88ccc;font-size:12px;margin-bottom:12px">ランキングに登録されるよ！</div>
+<input id="xNi" type="text" maxlength="12" placeholder="なまえ" style="background:rgba(255,255,255,.1);border:2px solid #ff6b9d;border-radius:12px;padding:12px 20px;font-size:18px;color:#fff;text-align:center;width:220px;outline:none">
+<button class="b" id="xNs" style="margin-top:12px">決定！</button>
 </div>
 <div id="ks" class="ov h">
 <div style="font-size:20px;color:#ffd93d;font-weight:900;margin:24px 0 8px">👗 着せ替え</div>
@@ -318,12 +328,12 @@ cv.addEventListener("click",onClick);
 document.addEventListener("keydown",onKey);
 $("xSt").onclick=goPlay;$("xRe").onclick=goPlay;$("xBk").onclick=goTitle;
 $("xCo").onclick=goCol;$("xCB").onclick=goTitle;
-$("xRa").onclick=()=>{st="rank";hAll();$("dr").classList.remove("h");};
+$("xRa").onclick=()=>{st="rank";hAll();$("dr").classList.remove("h");fetchRank();showRank("hi");};
 $("xRB").onclick=goTitle;$("xDC").onclick=()=>$("cd").classList.add("h");
 $("xKs").onclick=goKise;$("xKB").onclick=goTitle;
 $("xHw").onclick=()=>{$("hw").classList.remove("h");};
 $("xHB").onclick=()=>{$("hw").classList.add("h");};
-initPetals();
+initPetals();initNickname();
 lt=performance.now();requestAnimationFrame(loop);
 }
 function rz(){const r=CW/CH;let w=innerWidth,h=innerHeight;if(w/h>r)w=h*r;else h=w/r;cv.style.width=w+"px";cv.style.height=h+"px";}
@@ -595,11 +605,12 @@ const ud=$("xUl");
 if(nu.length){ud.classList.remove("h");ud.innerHTML=nu.map(s=>"🔓 "+s.nm+" がアンロック！").join("<br>");}
 else ud.classList.add("h");
 $("go").classList.remove("h");
+sendScore();
 }
 function goTitle(){st="title";hAll();$("ts").classList.remove("h");uTi();playBGM("title");}
 function goCol(){st="col";hAll();$("cs").classList.remove("h");rCol();}
 function goKise(){st="kise";hAll();$("ks").classList.remove("h");rKise();}
-function hAll(){document.querySelectorAll(".ov").forEach(e=>e.classList.add("h"));$("cd").classList.add("h");$("hw").classList.add("h");}
+function hAll(){document.querySelectorAll(".ov").forEach(e=>e.classList.add("h"));$("cd").classList.add("h");$("hw").classList.add("h");$("ni").classList.add("h");}
 function uTi(){$("xTi").textContent=hi>0?"🏆 HI: "+hi+"  累計: "+tot+"  史跡: "+ulS.length+"/12  衣装: "+ulC.length+"/"+COSTUMES.length:"";}
 
 /* ===== COLLECTION ===== */
@@ -647,6 +658,63 @@ function onKey(e){
 if(st!=="play"||dead)return;
 if(e.key==="ArrowLeft"&&tgtLane>0){tgtLane--;sfx("lane");e.preventDefault();}
 if(e.key==="ArrowRight"&&tgtLane<2){tgtLane++;sfx("lane");e.preventDefault();}
+}
+
+/* ===== RANKING API ===== */
+const RANK_URL="__RANK_URL__"; // Google Apps Script URL
+let rankData=null,rankTab="hi",nickname="";
+
+function initNickname(){
+nickname=localStorage.getItem("hr_nick")||"";
+if(!nickname)askNick();
+}
+function askNick(){
+$("ni").classList.remove("h");
+$("xNi").value=nickname;
+$("xNs").onclick=()=>{
+const v=$("xNi").value.trim();
+if(v){nickname=v;localStorage.setItem("hr_nick",v);$("ni").classList.add("h");}
+};
+}
+
+function sendScore(){
+if(!RANK_URL||RANK_URL==="__RANK_URL__"||!nickname)return;
+fetch(RANK_URL,{method:"POST",body:JSON.stringify({name:nickname,highscore:hi,totalscore:tot}),headers:{"Content-Type":"text/plain"}}).catch(()=>{});
+}
+
+function fetchRank(){
+if(!RANK_URL||RANK_URL==="__RANK_URL__")return;
+$("xRL").innerHTML='<div style="color:#a88ccc;text-align:center;padding:20px">読み込み中...</div>';
+fetch(RANK_URL).then(r=>r.json()).then(d=>{if(d.ok){rankData=d;renderRank();}}).catch(()=>{
+$("xRL").innerHTML='<div style="color:#a88ccc;text-align:center;padding:20px">オフラインです</div>';
+});
+}
+
+function showRank(tab){
+rankTab=tab;
+$("xRTh").style.opacity=tab==="hi"?"1":".5";
+$("xRTt").style.opacity=tab==="tot"?"1":".5";
+renderRank();
+}
+
+function renderRank(){
+const el=$("xRL");
+if(!rankData){el.innerHTML='<div style="color:#a88ccc;text-align:center;padding:20px">ランキングAPIが未設定です</div>';return;}
+const list=rankTab==="hi"?rankData.highscore:rankData.totalscore;
+const key=rankTab==="hi"?"highscore":"totalscore";
+if(!list||!list.length){el.innerHTML='<div style="color:#a88ccc;text-align:center;padding:20px">まだデータがありません</div>';return;}
+let h="";
+list.forEach((p,i)=>{
+const isMe=p.name===nickname;
+const bg=i<3?"background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,165,0,.06));border:1px solid rgba(255,215,0,.2)":"background:rgba(255,255,255,.04)";
+const medal=i===0?"\U0001f947":i===1?"\U0001f948":i===2?"\U0001f949":(i+1)+"";
+h+=`<div style="${bg};border-radius:10px;padding:10px 14px;margin:4px 0;display:flex;align-items:center;color:#fff;font-size:14px;${isMe?"box-shadow:0 0 8px rgba(255,107,157,.4)":""}">`;
+h+=`<span style="width:32px;font-weight:bold;color:#ffd93d">${medal}</span>`;
+h+=`<span style="flex:1;${isMe?"color:#ff6b9d;font-weight:bold":""}">${p.name}${isMe?" (あなた)":""}</span>`;
+h+=`<span style="font-weight:bold;color:#ff6b9d">${p[key].toLocaleString()}</span>`;
+h+="</div>";
+});
+el.innerHTML=h;
 }
 
 /* ===== OFFLINE (Service Worker) ===== */
