@@ -114,14 +114,14 @@ canvas{display:block;position:absolute;top:50%;left:50%;transform:translate(-50%
 <img id="xDI" src=""><div class="dn" id="xDN"></div><div class="dd" id="xDD"></div>
 <button class="b" id="xDC" style="margin-top:12px">閉じる</button>
 </div>
-<div id="dr" class="ov h" style="background:linear-gradient(180deg,#1a1a2e,#16213e);overflow-y:auto">
-<div style="font-size:20px;color:#ffd93d;font-weight:900;margin:24px 0 8px">🏆 ランキング</div>
-<div style="display:flex;gap:4px;margin-bottom:12px">
-<button class="b" id="xRTh" style="font-size:13px;padding:8px 18px" onclick="showRank('hi')">ハイスコア</button>
-<button class="b b3" id="xRTt" style="font-size:13px;padding:8px 18px" onclick="showRank('tot')">累計スコア</button>
+<div id="dr" class="ov h" style="background:linear-gradient(180deg,#1a1a2e,#16213e);overflow-y:auto;justify-content:flex-start;padding-top:24px;padding-bottom:24px">
+<div style="font-size:20px;color:#ffd93d;font-weight:900;margin-bottom:8px;flex-shrink:0">🏆 ランキング</div>
+<div style="display:flex;gap:4px;margin-bottom:12px;flex-shrink:0">
+<button class="b" id="xRTh" style="font-size:12px;padding:8px 16px" onclick="showRank('hi')">ハイスコア</button>
+<button class="b b3" id="xRTt" style="font-size:12px;padding:8px 16px" onclick="showRank('tot')">累計スコア</button>
 </div>
-<div id="xRL" style="max-width:380px;width:100%;padding:0 16px"></div>
-<button class="b b2" id="xRB" style="margin-top:16px;margin-bottom:24px">戻る</button>
+<div id="xRL" style="width:100%;max-width:360px;padding:0 12px;flex:1;overflow-y:auto"></div>
+<button class="b b2" id="xRB" style="margin-top:12px;flex-shrink:0">戻る</button>
 </div>
 <div id="ni" class="ov h" style="background:rgba(0,0,0,.85);backdrop-filter:blur(4px)">
 <div style="color:#fff;font-size:18px;margin-bottom:12px;font-weight:bold">🎉 ニックネームを入力してね</div>
@@ -705,10 +705,10 @@ list.forEach((p,i)=>{
 const isMe=p.name===nickname;
 const bg=i<3?"background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,165,0,.06));border:1px solid rgba(255,215,0,.2)":"background:rgba(255,255,255,.04)";
 const medal=i===0?"\U0001f947":i===1?"\U0001f948":i===2?"\U0001f949":(i+1)+"";
-h+=`<div style="${bg};border-radius:10px;padding:10px 14px;margin:4px 0;display:flex;align-items:center;color:#fff;font-size:14px;${isMe?"box-shadow:0 0 8px rgba(255,107,157,.4)":""}">`;
-h+=`<span style="width:32px;font-weight:bold;color:#ffd93d">${medal}</span>`;
-h+=`<span style="flex:1;${isMe?"color:#ff6b9d;font-weight:bold":""}">${p.name}${isMe?" (あなた)":""}</span>`;
-h+=`<span style="font-weight:bold;color:#ff6b9d">${p[key].toLocaleString()}</span>`;
+h+=`<div style="${bg};border-radius:8px;padding:8px 10px;margin:3px 0;display:flex;align-items:center;color:#fff;font-size:13px;${isMe?"box-shadow:0 0 8px rgba(255,107,157,.4)":""}">`;
+h+=`<span style="width:28px;font-weight:bold;color:#ffd93d;font-size:14px;flex-shrink:0">${medal}</span>`;
+h+=`<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${isMe?"color:#ff6b9d;font-weight:bold":""}">${p.name}${isMe?" (自分)":""}</span>`;
+h+=`<span style="font-weight:bold;color:#ff6b9d;flex-shrink:0;margin-left:8px">${p[key].toLocaleString()}</span>`;
 h+="</div>";
 });
 el.innerHTML=h;
