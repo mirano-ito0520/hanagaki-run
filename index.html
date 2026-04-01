@@ -69,6 +69,7 @@ canvas{display:block;position:absolute;top:50%;left:50%;transform:translate(-50%
 <button class="b b4" id="xKs" style="font-size:14px;padding:12px 20px">👗 着せ替え</button>
 </div>
 <button class="b b3" id="xRa" style="position:relative">🏆 ランキング</button>
+<div id="xNn" style="position:relative;font-size:13px;color:#c44569;margin-top:12px;cursor:pointer;text-decoration:underline dotted" onclick="askNick()"></div>
 <div class="ti" id="xTi" style="position:relative"></div>
 </div>
 <div id="hw" class="ov h" style="background:rgba(0,0,0,.88);backdrop-filter:blur(4px)">
@@ -659,24 +660,33 @@ if(e.key==="ArrowRight"&&tgtLane<2){tgtLane++;sfx("lane");e.preventDefault();}
 
 /* ===== RANKING API ===== */
 const RANK_URL="https://script.google.com/macros/s/AKfycbyqQvNzHUdsfTGF-GsVmd14CztiNZSBBxflUkYpkHB5pjMN4JBbL7aOSgZqxnm7YyVk/exec";
-let rankData=null,rankTab="hi",nickname="";
+let rankData=null,rankTab="hi",nickname="",pid="";
+
+function genId(){return "hr_"+Date.now().toString(36)+"_"+Math.random().toString(36).substr(2,6);}
 
 function initNickname(){
+pid=localStorage.getItem("hr_pid")||"";
+if(!pid){pid=genId();localStorage.setItem("hr_pid",pid);}
 nickname=localStorage.getItem("hr_nick")||"";
 if(!nickname)askNick();
+updNickDisplay();
 }
 function askNick(){
 $("ni").classList.remove("h");
 $("xNi").value=nickname;
 $("xNs").onclick=()=>{
 const v=$("xNi").value.trim();
-if(v){nickname=v;localStorage.setItem("hr_nick",v);$("ni").classList.add("h");}
+if(v){nickname=v;localStorage.setItem("hr_nick",v);$("ni").classList.add("h");updNickDisplay();}
 };
+}
+function updNickDisplay(){
+const el=$("xNn");
+if(el)el.textContent=nickname?"🏷 "+nickname+" (タップで変更)":"";
 }
 
 function sendScore(){
-if(!RANK_URL||!RANK_URL||!nickname)return;
-fetch(RANK_URL,{method:"POST",body:JSON.stringify({name:nickname,highscore:hi,totalscore:tot}),headers:{"Content-Type":"text/plain"}}).catch(()=>{});
+if(!RANK_URL||!nickname)return;
+fetch(RANK_URL,{method:"POST",body:JSON.stringify({id:pid,name:nickname,highscore:hi,totalscore:tot}),headers:{"Content-Type":"text/plain"}}).catch(()=>{});
 }
 
 function fetchRank(){
