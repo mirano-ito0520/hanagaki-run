@@ -256,7 +256,7 @@ const TRIVIA=[
 ];
 
 /* ===== STATE ===== */
-let cv,cx,st="title",sc=0,hi=0,tot=0,ulS=[],ulC=[],curCos="default",sakura=0,sakuraGame=0;
+let cv,cx,st="title",sc=0,hi=0,tot=0,ulS=[],ulC=[],curCos="default",sakura=0,sakuraGame=0,downSwN=0,downSwT=0,cheatStage=0;
 let lt=0,spd=2,sY=0,aIdx=0,adT=0,adN="",sfT=0,pwT=0,lastCycle=-1,bgOrder=[0,1,2,3],pwRare=false;
 let lane=1,tgtLane=1,laneX=LANES[1];
 let dead=false,deadT=0;
@@ -422,7 +422,7 @@ if(it.y>CH+40){items.splice(i,1);continue;}
 const iR=24,pL2=laneX-60,pR2=laneX+60,pT2=545,pB2=700;
 const iL=LANES[it.ln]-iR,iRR=LANES[it.ln]+iR,iT=it.y-iR,iB=it.y+iR;
 const magnet=pwT>0;
-if((pL2<iRR&&pR2>iL&&pT2<iB&&pB2>iT)||(magnet&&Math.abs(LANES[it.ln]-laneX)<130&&it.y>500&&it.y<750)){
+if((pL2<iRR&&pR2>iL&&pT2<iB&&pB2>iT)||(magnet&&it.tp!=="mieko"&&it.y>0&&it.y<CH)){
 const mul=pwRare&&pwT>0?10:1;
 const pts=it.pt*mul;
 sc+=pts;
@@ -648,7 +648,7 @@ for(let i=0;i<8;i++){const sx=60+Math.sin(t*2+i)*30+i*50,sy=200+Math.cos(t*1.5+i
 
 /* ===== STATE MANAGEMENT ===== */
 function goPlay(){
-st="play";sc=0;spd=2;sY=0;sfT=4000;pwT=0;lastCycle=-1;sakuraGame=0;
+st="play";sc=0;spd=2;sY=0;sfT=4000;pwT=0;lastCycle=-1;sakuraGame=0;downSwN=0;cheatStage=0;
 bgOrder=[0,1,2,3];for(let i=bgOrder.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bgOrder[i],bgOrder[j]]=[bgOrder[j],bgOrder[i]];}
 aIdx=bgOrder[0];
 lane=1;tgtLane=1;laneX=LANES[1];dead=false;
@@ -675,7 +675,7 @@ $("xTr").innerHTML=TRIVIA[~~(Math.random()*TRIVIA.length)];
 $("go").classList.remove("h");
 sendScore();
 }
-function goTitle(){st="title";hAll();$("ts").classList.remove("h");uTiImg();uTi();playBGM("title");}
+function goTitle(){st="title";hAll();$("ts").classList.remove("h");uTiImg();uTi();playBGM("title");downSwN=0;cheatStage=0;}
 function uTiImg(){const cos=COSTUMES.find(c=>c.id===curCos)||COSTUMES[0];const k=cos.run&&SP[cos.run]?cos.run:"run_default";const im=$("tsImg");im.src=SP[k]||"";im.style.display=SP[k]?"block":"none";}
 function goCol(){st="col";hAll();$("cs").classList.remove("h");rCol();}
 function goKise(){st="kise";hAll();$("ks").classList.remove("h");rKise();}
@@ -746,16 +746,40 @@ const ex=e.changedTouches[0].clientX,ey=e.changedTouches[0].clientY;
 const dx=ex-touchSX,dy=ey-touchSY;
 const dt=performance.now()-touchST;
 if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>30){
-// Swipe
+// Swipe horizontal
 if(dx<0&&tgtLane>0){tgtLane--;sfx("lane");}
 else if(dx>0&&tgtLane<2){tgtLane++;sfx("lane");}
+downSwN=0;
+}else if(Math.abs(dy)>Math.abs(dx)&&dy>30){
+// Swipe down: cheat counter
+const now=performance.now();
+if(now-downSwT>1500)downSwN=0;
+downSwN++;downSwT=now;
+if(downSwN>=10){downSwN=0;tryCheat();}
 }else if(Math.abs(dx)<15&&Math.abs(dy)<15&&dt<300){
 // Tap: left half -> left, right half -> right
 const rect=cv.getBoundingClientRect();
 const rx=(ex-rect.left)/rect.width;
 if(rx<0.4&&tgtLane>0){tgtLane--;sfx("lane");}
 else if(rx>0.6&&tgtLane<2){tgtLane++;sfx("lane");}
+downSwN=0;
 }}
+function tryCheat(){
+if(cheatStage===0){
+if(confirm("ゲームをやめる？")){cheatStage=0;goTitle();}
+else{cheatStage=1;}
+}else{
+const pw=prompt("🔐 パスワード");
+cheatStage=0;
+if(pw==="デジタル担当"){
+sakura=99999;localStorage.setItem("hr_sk",sakura+"");
+alert("🌸 チートモード発動！桜 99,999 獲得");
+uTi();
+}else if(pw!==null){
+sakura=0;localStorage.setItem("hr_sk","0");
+alert("❌ パスワードが違うよ！\n桜をリセットしました");
+uTi();
+}}}
 function onClick(e){/* Touch handles swipes; click is fallback */}
 function onKey(e){
 if(st!=="play"||dead)return;
